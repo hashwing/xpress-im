@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<style>
+			.page_login {
+				padding: 10px;
+			}
+		
+			.head {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding-top: 60px;
+				padding-bottom: 60px;
+			}
+		
+			.head .head_bg {
+				border: 1px solid #fbecf1;
+				border-radius: 50px;
+				width: 100px;
+				height: 100px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		
+			.head .head_bg .head_inner_bg {
+				border-radius: 40px;
+				width: 80px;
+				height: 80px;
+				display: flex;
+				background-color: #1296db;
+				align-items: flex-end;
+				justify-content: center;
+				overflow: hidden;
+			}
+			.ui-page-login,
+			body {
+				width: 100%;
+				height: 100%;
+				margin: 0px;
+				padding: 0px;
+			}
+			.mui-content{height: 100%;}
+			.area {
+				margin: 20px auto 0px auto;
+			}
+			
+			.mui-input-group {
+				margin-top: 10px;
+			}
+			
+			.mui-input-group:first-child {
+				margin-top: 20px;
+			}
+			
+			.mui-input-group label {
+				width: 22%;
+			}
+			
+			.mui-input-row label~input,
+			.mui-input-row label~select,
+			.mui-input-row label~textarea {
+				width: 78%;
+			}
+			
+			.mui-checkbox input[type=checkbox],
+			.mui-radio input[type=radio] {
+				top: 6px;
+			}
+			
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			
+			.mui-btn {
+				padding: 10px;
+			}
+			
+			.link-area {
+				display: block;
+				margin-top: 25px;
+				text-align: center;
+			}
+			
+			.spliter {
+				color: #bbb;
+				padding: 0px 8px;
+			}
+		</style>
+		<script src="../../js/vue.min.js"></script>
+	</head>
+	<body>
+		<div class="page_login mui-content" id="app">
+			<!-- 头部logo -->
+			<div class="head">
+				<div class="head_bg">
+					<div class="head_inner_bg">
+						<image style="width: 55px;height: 65px;" src="../../img/head.png" class="head_logo" />
+					</div>
+				</div>
+			</div>
+			<!-- 登录form -->
+			<form id='login-form' class="mui-input-group">
+				<div class="mui-input-row">
+					<label>账号</label>
+					<input v-model="username" type="text" class="mui-input-clear mui-input" placeholder="请输入账号">
+				</div>
+				<div class="mui-input-row">
+					<label>密码</label>
+					<input v-model="password" type="password" class="mui-input-clear mui-input" placeholder="请输入密码">
+				</div>
+			</form>
+			<div class="mui-content-padded">
+				<button @click="login" type="button" class="mui-btn mui-btn-block mui-btn-primary">登录</button>
+				<div class="link-area"><a @click="reg">注册账号</a> <span class="spliter">|</span> <a @click="forget">忘记密码</a>
+				</div>
+			</div>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/strophe.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script>
+			mui.plusReady(function() {
+				new Vue({
+					el: "#app",
+					data() {
+						return {
+							username: "",
+							password: "",
+						}
+					},
+					methods: {
+						login: function() {
+							console.log(this.username)
+							if (this.username == "" || this.password == "") {
+								mui.toast("账号或密码不能为空")
+								return
+							};
+							var jid = this.username + "@" + domain;
+							console.log(jid+","+this.password);
+							var onConnect = function onConnect(status) {
+								if (status == Strophe.Status.CONNFAIL) {
+									alert("连接失败！");
+								} else if (status == Strophe.Status.AUTHFAIL) {
+									alert("登录失败！");
+									connection.reset()
+									
+								} else if (status == Strophe.Status.DISCONNECTED) {
+									alert("连接断开！");
+								} else if (status == Strophe.Status.CONNECTED) {}
+							};
+							
+
+							var onMessage = function onMessage(msg) {
+
+								console.log(msg);
+								// 解析出<message>的from、type属性，以及body子元素
+// 								var from = msg.getAttribute('from');
+// 								var type = msg.getAttribute('type');
+// 								var elems = msg.getElementsByTagName('body');
+// 
+// 								if (type == "groupchat" && elems.length > 0) {
+// 									var body = elems[0];
+// 									$("#msg").append(from.substring(from.indexOf('/') + 1) + ":<br>" + Strophe.getText(body) + "<br>")
+// 								}
+								return true;
+							}
+							connection = new Strophe.Connection(xmpp_ws);
+							connection.connect(jid, this.password, onConnect);
+
+						},
+						reg: function() {
+							mui.toast("暂不支持!")
+						},
+						forget: function() {
+							mui.toast("暂不支持!")
+						}
+					}
+				})
+			})
+			var backButtonPress = 0;
+			mui.back = function(event) {
+				backButtonPress++;
+				if (backButtonPress > 1) {
+					plus.runtime.quit();
+				} else {
+					plus.nativeUI.toast('再按一次退出应用');
+				}
+				setTimeout(function() {
+					backButtonPress = 0;
+				}, 2000);
+				return false;
+			};
+			
+			mui.init()
+		</script>
+
+	</body>
+</html>
