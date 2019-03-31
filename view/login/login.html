@@ -136,38 +136,46 @@
 					},
 					methods: {
 						login: function() {
+							var self = this
 							console.log(this.username)
 							if (this.username == "" || this.password == "") {
 								mui.toast("账号或密码不能为空")
 								return
 							};
 							var jid = this.username + "@" + domain;
-							console.log(jid+","+this.password);
+							console.log(jid + "," + this.password);
 							var onConnect = function onConnect(status) {
 								if (status == Strophe.Status.CONNFAIL) {
 									alert("连接失败！");
 								} else if (status == Strophe.Status.AUTHFAIL) {
 									alert("登录失败！");
-									connection.reset()
-									
+									connection.disconnect();
+
 								} else if (status == Strophe.Status.DISCONNECTED) {
 									alert("连接断开！");
-								} else if (status == Strophe.Status.CONNECTED) {}
+								} else if (status == Strophe.Status.CONNECTED) {
+									plus.storage.setItem("user", self.username);
+									plus.storage.setItem("pwd", self.password);
+									var _self = plus.webview.currentWebview()
+									var wo = _self.opener();
+									wo.evalJS('loginSuccess()')
+									_self.close()
+								}
 							};
-							
+
 
 							var onMessage = function onMessage(msg) {
 
 								console.log(msg);
 								// 解析出<message>的from、type属性，以及body子元素
-// 								var from = msg.getAttribute('from');
-// 								var type = msg.getAttribute('type');
-// 								var elems = msg.getElementsByTagName('body');
-// 
-// 								if (type == "groupchat" && elems.length > 0) {
-// 									var body = elems[0];
-// 									$("#msg").append(from.substring(from.indexOf('/') + 1) + ":<br>" + Strophe.getText(body) + "<br>")
-// 								}
+								// 								var from = msg.getAttribute('from');
+								// 								var type = msg.getAttribute('type');
+								// 								var elems = msg.getElementsByTagName('body');
+								// 
+								// 								if (type == "groupchat" && elems.length > 0) {
+								// 									var body = elems[0];
+								// 									$("#msg").append(from.substring(from.indexOf('/') + 1) + ":<br>" + Strophe.getText(body) + "<br>")
+								// 								}
 								return true;
 							}
 							connection = new Strophe.Connection(xmpp_ws);
@@ -196,7 +204,7 @@
 				}, 2000);
 				return false;
 			};
-			
+
 			mui.init()
 		</script>
 
