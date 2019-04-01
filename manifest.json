@@ -64,7 +64,7 @@
 						{
 							"tag": "font",
 							"id": "indexIcon",
-							"text": "\ue500",
+							"text": "\ue203",
 							"position": {
 								"top": "4px",
 								"left": "0",
@@ -79,7 +79,7 @@
 						}, {
 							"tag": "font",
 							"id": "indexText",
-							"text": "首页",
+							"text": "消息",
 							"position": {
 								"top": "23px",
 								"left": "0",
@@ -93,7 +93,7 @@
 						},{
 							"tag": "font",
 							"id": "newsIcon",
-							"text": "\ue201",
+							"text": "\ue100",
 							"position": {
 								"top": "4px",
 								"left": "33%",
@@ -108,7 +108,7 @@
 						}, {
 							"tag": "font",
 							"id": "newsText",
-							"text": "消息",
+							"text": "联系人",
 							"position": {
 								"top": "23px",
 								"left": "33%",
@@ -122,7 +122,7 @@
 						},{
 							"tag": "font",
 							"id": "contactIcon",
-							"text": "\ue100",
+							"text": "\ue101",
 							"position": {
 								"top": "4px",
 								"left": "66%",
@@ -137,7 +137,7 @@
 						}, {
 							"tag": "font",
 							"id": "contactText",
-							"text": "通讯录",
+							"text": "我",
 							"position": {
 								"top": "24px",
 								"left": "66%",
