@@ -47,9 +47,17 @@
 		}
 	},
 	"plus": {
+		"statusbar": {
+			"immersed": "supportedDevice",
+			"style": "dark"
+			},
 		"launchwebview": {
-			"bottom": "0px",
-			"background": "#fff",
+			"titleNView": {
+				"backgroundcolor": "#F7F7F7",
+				"titletext": "消息",
+				"titlecolor": "#000000"
+			 },
+
 			"subNViews": [
 				{
 					"id": "tabBar",
@@ -92,7 +100,7 @@
 							}
 						},{
 							"tag": "font",
-							"id": "newsIcon",
+							"id": "contactIcon",
 							"text": "\ue100",
 							"position": {
 								"top": "4px",
@@ -107,7 +115,7 @@
 							}
 						}, {
 							"tag": "font",
-							"id": "newsText",
+							"id": "contactText",
 							"text": "联系人",
 							"position": {
 								"top": "23px",
@@ -121,7 +129,7 @@
 							}
 						},{
 							"tag": "font",
-							"id": "contactIcon",
+							"id": "meIcon",
 							"text": "\ue101",
 							"position": {
 								"top": "4px",
@@ -136,7 +144,7 @@
 							}
 						}, {
 							"tag": "font",
-							"id": "contactText",
+							"id": "meText",
 							"text": "我",
 							"position": {
 								"top": "24px",
@@ -147,19 +155,6 @@
 							"textStyles": {
 								"align": "center",
 								"size": "10px"
-							}
-						},
-						{
-							"tag": "rect",
-							"id": "tabBorder",
-							"position": {
-								"top": "0",
-								"left": "0",
-								"width": "100%",
-								"height": "1px"
-							},
-							"rectStyles": {
-								"color": "#ccc"
 							}
 						}
 					]
