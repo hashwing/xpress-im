@@ -1,0 +1,20 @@
+
+.image {
+	width: 100px;
+	height: 100px;
+	border-radius: 50px;
+	background-color: #eee;
+}
+
+.mui-table-view .mui-media-object {
+	max-width: initial;
+	width: 55px;
+	height: 55px;
+}
+
+.mark {
+	background-color: cornflowerblue;
+}
+
+.mui-h5{
+	font-size: 13px;
