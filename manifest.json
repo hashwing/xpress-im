@@ -49,13 +49,13 @@
 	"plus": {
 		"statusbar": {
 			"immersed": "supportedDevice",
-			"style": "dark"
+			"style": "light"
 			},
 		"launchwebview": {
 			"titleNView": {
-				"backgroundcolor": "#F7F7F7",
+				"backgroundcolor": "#007aff",
 				"titletext": "消息",
-				"titlecolor": "#000000"
+				"titlecolor": "#fff"
 			 },
 
 			"subNViews": [
