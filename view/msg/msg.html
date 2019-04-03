@@ -12,7 +12,7 @@
 	<body>
 		<div class="mui-content">
 			<ul class="mui-table-view" style="margin: 0;" id="msgs-list">
-				<li class="mui-table-view-cell mui-media" v-for="msg in msgs">
+				<li class="mui-table-view-cell mui-media" v-for="msg in msgs" >
 					<a href="javascript:;">
 						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
 						<div class="mui-media-body">
@@ -89,6 +89,7 @@
 			});
 			mui.plusReady(function() {
 				//
+				//plus.storage.clear();
 				var user = plus.storage.getItem("user")
 				var pwd = plus.storage.getItem("pwd")
 				if (user == "" || user == null || pwd == "" || pwd == null) {
