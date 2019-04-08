@@ -1,0 +1,33 @@
+.mui-content-padded {
+	padding-top: 20px;
+}
+
+.mui-btn {
+	padding: 10px;
+}
+
+.mui-table-view{
+	margin-top: 10px;
+}
+
+/* .user-head{
+	height: 80px;
+	background: #000000;
+} */
+
+.image {
+	width: 100px;
+	height: 100px;
+	border-radius: 50px;
+	background-color: #eee;
+}
+
+.mui-table-view .mui-media-object {
+	max-width: initial;
+	width: 55px;
+	height: 55px;
+}
+
+.mui-ellipsis{
+	padding-top: 6px;
+}

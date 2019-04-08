@@ -6,14 +6,15 @@
 		<title></title>
 		<link href="../../css/mui.min.css" rel="stylesheet" />
 		<link href="../../css/app.css" rel="stylesheet"/>
+		<link href="../../css/user.css" rel="stylesheet"/>
 		<script src="../../js/vue.min.js"></script>
 	</head>
 	<body>
-		<div class="mui-content">
+		<div class="mui-content" style="margin-top: -10px;">
 			<ul class="mui-table-view">
 				<li class="mui-table-view-cell mui-media">
-					<a class="mui-navigate-right">
-						<img class="mui-media-object mui-pull-left" src="../../img/head.png">
+					<a class="mui-navigate-right user-head">
+						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
 						<div class="mui-media-body" id="user">
 							{{ nickName }}
 							<p class='mui-ellipsis'>树洞号：{{ uid }}</p>
@@ -37,34 +38,11 @@
 					<a class="mui-navigate-right">关于</a>
 				</li>
 			</ul>
-			<ul class="mui-table-view">
-				<li class="mui-table-view-cell">
-					<a class="mui-navigate-right" id="app" @click="logout">退出</a>
-				</li>
-			</ul>
+			<div class="mui-content-padded">
+				<button @click="login" type="button" class="mui-btn mui-btn-block mui-btn-red">退出</button>
+			</div>
 		</div>
 		<script src="../../js/mui.min.js"></script>
 		<script src="../../js/data/user.js"></script>
-		<script>
-			mui.plusReady(function() {
-				new Vue({
-					el: "#app",
-					methods: {
-						logout: function() {
-							plus.storage.clear()
-							
-							var user = plus.storage.getItem("user")
-							var pwd = plus.storage.getItem("pwd")
-							if (user == "" || user == null || pwd == "" || pwd == null) {
-								mui.openWindow({
-									url: "../login/login.html",
-									id: "login",
-								})
-							}
-						}
-					}
-				})
-			})
-		</script>
 	</body>
 </html>

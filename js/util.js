@@ -134,6 +134,44 @@ var util = {
 				right: '15px'  
 			});  
 		});  
+	},
+	addMsgCount: function(num) {
+		var Rheight = '18px';
+		var Rwith = '20px';
+		if (num == 0 || num == null) {
+			Rheight = '0px';
+			Rwith = '0px';
+		}
+		if (num > 10 && num < 100) {
+			Rwith = '25px';
+		}
+		if (num > 99) {
+			Rwith = '28px';
+			num = '99+';
+		}
+		nviewEvent = plus.nativeObj.View.getViewById("tabBar"), // 获取nview控件对象
+		// 绘制空心圆角矩形,borderColor设置为导航背景色，就变成圆形
+		nviewEvent.drawRect({
+				color: '#f74c31',
+				borderWidth: '0px',
+				radius: '50px',
+				borderColor: "#FFFFFF"
+			}, {
+				top: '2px',
+				left: '17%',
+				width: Rwith,
+				height: Rheight
+			});
+		//绘制数字
+		nviewEvent.drawText(num, {
+			top: '3px',
+			left: '17%',
+			width: Rwith,
+			height: Rheight
+		}, {
+			color: '#FFFFF',
+			size: '13px'
+		});
 	}
 };
 
