@@ -3,7 +3,7 @@ var util = {
 		ACTIVE_COLOR: "#007aff",
 		NORMAL_COLOR: "#000",
 		subpages: ["../contact/contact.html", "../me/me.html"],
-		titles: ["消息","联系人", "我的"]
+		titles: ["消息","联系人", "我"]
 	},
 	/**
 	 *  简单封装了绘制原生view控件的方法
