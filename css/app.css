@@ -6,3 +6,7 @@
 body{
 	padding-bottom:50px ;
 }
+
+.mui-plus header.mui-bar{
+	display: none;
+}

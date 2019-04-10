@@ -10,12 +10,12 @@
 		<script src="../../js/vue.min.js"></script>
 	</head>
 	<body>
-		<div class="mui-content" style="margin-top: -10px;">
+		<div class="mui-content" style="margin-top: -10px;" id="user">
 			<ul class="mui-table-view">
 				<li class="mui-table-view-cell mui-media">
 					<a class="mui-navigate-right user-head">
 						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
-						<div class="mui-media-body" id="user">
+						<div class="mui-media-body">
 							{{ nickName }}
 							<p class='mui-ellipsis'>树洞号：{{ uid }}</p>
 						</div>
@@ -39,7 +39,7 @@
 				</li>
 			</ul>
 			<div class="mui-content-padded">
-				<button @click="login" type="button" class="mui-btn mui-btn-block mui-btn-red">退出</button>
+				<button @click="logout" type="button" class="mui-btn mui-btn-block mui-btn-red">退出</button>
 			</div>
 		</div>
 		<script src="../../js/mui.min.js"></script>

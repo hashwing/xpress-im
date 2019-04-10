@@ -13,20 +13,20 @@
 		<div class="mui-content">
 			<ul class="mui-table-view" style="margin: 0;" id="msgs-list">
 				<li class="mui-table-view-cell mui-media" v-for="msg in msgs" >
-					<a href="javascript:;">
+					<a href="javascript:;"  @click="chat(msg.user,msg.name)">
 						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
 						<div class="mui-media-body">
 							<div class="msg-title mui-col-xs-8 mui-col-sm-10" style="float: left;">
 								{{ msg.name }}
 							</div>
 							<div class="msg-time mui-col-xs-4  mui-text-right" style="float: right;">
-								<div class="mui-h5">昨天12:25</div>
+								<div class="mui-h5">{{ msg.time }}</div>
 							</div>
 							<div class="msg-content mui-col-xs-10" style="float: left; margin-top: 8px;">
-								<p class="mui-ellipsis">想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.</p>
+								<p class="mui-ellipsis">{{ msg.first}}</p>
 							</div>
 							<div class="msg-count mui-col-xs-1 mui-text-right" style="float: right;margin-top: 8px;">
-								<div class="mui-badge mui-badge-primary mark">1</div>
+								<div class="mui-badge mui-badge-primary mark">{{ msg.count }}</div>
 							</div>
 						</div>
 					</a>
@@ -79,77 +79,7 @@
 		<script src="../../js/app.js"></script>
 		<script src="../../js/data/msg.js"></script>
 		<script type="text/javascript" charset="utf-8">
-			function loginSuccess() {
-				initNav()
-			}
-			mui.init({
-				keyEventBind: {
-					backbutton: false //关闭back按键监听
-				}
-			});
-			mui.plusReady(function() {
-				//
-				//plus.storage.clear();
-				var user = plus.storage.getItem("user")
-				var pwd = plus.storage.getItem("pwd")
-				if (user == "" || user == null || pwd == "" || pwd == null) {
-					mui.openWindow({
-						url: "../login/login.html",
-						id: "login",
-					})
-				} else {
-					console.log(user + "," + pwd)
-					initNav()
-					util.addMsgCount(10)
-				}
-			})
-
-			function initNav() {
-				indexPage = plus.webview.currentWebview()
-
-				// 创建子webview窗口 并初始化
-				var aniShow = {};
-				util.initSubpage(aniShow);
-
-				var nview = plus.nativeObj.View.getViewById('tabBar'),
-					activePage = plus.webview.currentWebview(),
-					targetPage,
-					subpages = util.options.subpages,
-					pageW = window.innerWidth,
-					currIndex = 0;
-
-				/**
-				 * 根据判断view控件点击位置判断切换的tab
-				 */
-				nview.addEventListener('click', function(e) {
-					var clientX = e.clientX;
-					if (clientX > 0 && clientX <= parseInt(pageW * 0.33)) {
-						currIndex = 0;
-
-					} else if (clientX > parseInt(pageW * 0.33) && clientX <= parseInt(pageW * 0.66)) {
-						currIndex = 1;
-					} else {
-						currIndex = 2;
-					}
-					// 匹配对应tab窗口	
-					if (currIndex > 0) {
-						targetPage = plus.webview.getWebviewById(subpages[currIndex - 1]);
-					} else {
-						targetPage = plus.webview.currentWebview();
-					}
-
-					if (targetPage == activePage) {
-						return;
-					}
-					//底部选项卡切换
-					util.toggleNview(currIndex);
-					// 子页面切换
-					util.changeSubpage(targetPage, activePage, aniShow);
-					//更新当前活跃的页面
-					activePage = targetPage;
-					util.setTitle(indexPage, currIndex)
-				});
-			}
+			
 		</script>
 	</body>
 </html>
