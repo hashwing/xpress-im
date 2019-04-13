@@ -8,63 +8,26 @@
 		<link href="../../css/app.css" rel="stylesheet" />
 		<link href="../../css/msg.css" rel="stylesheet" />
 		<script src="../../js/vue.min.js"></script>
+		<script src="../../js/strophe.min.js"></script>
 	</head>
 	<body>
 		<div class="mui-content">
-			<ul class="mui-table-view" style="margin: 0;" id="msgs-list">
+			<ul class="mui-table-view" style="margin: 0;" id="msgs">
 				<li class="mui-table-view-cell mui-media" v-for="msg in msgs" >
 					<a href="javascript:;"  @click="chat(msg.user,msg.name)">
 						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
 						<div class="mui-media-body">
-							<div class="msg-title mui-col-xs-8 mui-col-sm-10" style="float: left;">
+							<div class="msg-title mui-col-xs-7 mui-col-sm-10" style="float: left;">
 								{{ msg.name }}
 							</div>
-							<div class="msg-time mui-col-xs-4  mui-text-right" style="float: right;">
+							<div class="msg-time mui-col-xs-5  mui-text-right" style="float: right;">
 								<div class="mui-h5">{{ msg.time }}</div>
 							</div>
 							<div class="msg-content mui-col-xs-10" style="float: left; margin-top: 8px;">
 								<p class="mui-ellipsis">{{ msg.first}}</p>
 							</div>
-							<div class="msg-count mui-col-xs-1 mui-text-right" style="float: right;margin-top: 8px;">
+							<div v-if="msg.count>0" class="msg-count mui-col-xs-1 mui-text-right" style="float: right;margin-top: 8px;" >
 								<div class="mui-badge mui-badge-primary mark">{{ msg.count }}</div>
-							</div>
-						</div>
-					</a>
-				</li>
-				<li class="mui-table-view-cell mui-media">
-					<a href="javascript:;">
-						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
-						<div class="mui-media-body">
-							<div class="msg-title mui-col-xs-8 mui-col-sm-10" style="float: left;">
-								吴捷
-							</div>
-							<div class="msg-time mui-col-xs-4  mui-text-right" style="float: right;">
-								<div class="mui-h5">昨天12:25</div>
-							</div>
-							<div class="msg-content mui-col-xs-10" style="float: left; margin-top: 8px;">
-								<p class="mui-ellipsis">想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.</p>
-							</div>
-							<div class="msg-count mui-col-xs-1 mui-text-right" style="float: right;margin-top: 8px;">
-								<!-- <div class="mui-badge mui-badge-primary mark">1</div> -->
-							</div>
-						</div>
-					</a>
-				</li>
-				<li class="mui-table-view-cell mui-media">
-					<a href="javascript:;">
-						<img class="mui-media-object mui-pull-left image" src="../../img/head.png">
-						<div class="mui-media-body">
-							<div class="msg-title mui-col-xs-8 mui-col-sm-10" style="float: left;">
-								詹晓云
-							</div>
-							<div class="msg-time mui-col-xs-4  mui-text-right" style="float: right;">
-								<div class="mui-h5">昨天12:25</div>
-							</div>
-							<div class="msg-content mui-col-xs-10" style="float: left; margin-top: 8px;">
-								<p class="mui-ellipsis">想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.</p>
-							</div>
-							<div class="msg-count mui-col-xs-1 mui-text-right" style="float: right;margin-top: 8px;">
-								<!-- <div class="mui-badge mui-badge-primary mark">1</div> -->
 							</div>
 						</div>
 					</a>
@@ -77,6 +40,11 @@
 		<script src="../../js/mui.min.js"></script>
 		<script src="../../js/util.js"></script>
 		<script src="../../js/app.js"></script>
+		<script src="../../js/chat/jquery-1.9.1.min.js"></script>
+		<script src="../../js/data/db.js"></script>
+		<script src="../../js/data/vg.js"></script>
+		<script src="../../js/chat/underscore-min.js"></script>
+		<script src="../../js/data/chat.js"></script>
 		<script src="../../js/data/msg.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			

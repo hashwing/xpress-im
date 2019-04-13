@@ -61,7 +61,7 @@ var util = {
 	/**	
 	 * 点击切换tab窗口 
 	 */
-	changeSubpage: function(targetPage, activePage, aniShow) {
+	changeSubpage: function(targetPage, activePage, aniShow,disableInn) {
 		//若为iOS平台或非首次显示，则直接显示
 		if (mui.os.ios || aniShow[targetPage]) {
 			plus.webview.show(targetPage);
@@ -71,6 +71,10 @@ var util = {
 			temp[targetPage] = "true";
 			mui.extend(aniShow, temp);
 			plus.webview.show(targetPage, "fade-in", 300);
+			if (!disableInn){
+				targetPage.evalJS("initHeight()")
+			}
+
 		}
 		//隐藏当前 除了第一个父窗口
 		if (activePage !== plus.webview.getLaunchWebview()) {

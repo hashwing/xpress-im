@@ -19,32 +19,31 @@ mui.plusReady(function() {
 		})
 	} else {
 		console.log(user + "," + pwd)
-		initNav();
-		initMsg()
+		initMsg();
 	}
 })
 
-function initMsg(){
-	new Vue({
-		el: "#msgs-list",
+var a
+function initMsg() {
+	a=new Vue({
+		el: "#msgs",
 		data() {
 			return {
-				msgs: [{
-					user: "hym",
-					name: "韩一敏",
-					time: "昨天12:35",
-					count: 1,
-					first: "测试"
-				}],
+				msgs: [],
+				unread: new Map(),
 				password: "",
 			}
 		},
+		mounted() {
+			this.initConnect()
+		},
 		methods: {
-			chat: function(user,name) {
-				console.log(user)
+			chat: function(user, name) {
+				var selfUser = plus.storage.getItem("user")
+				var self=this
 				mui.openWindow({
 					url: 'chat.html',
-					id: 'chat.html',
+					id: user,
 					styles: { // 窗口参数 参考5+规范中的WebviewStyle,也就是说WebviewStyle下的参数都可以在此设置
 						titleNView: { // 窗口的标题栏控件
 							titleText: name, // 标题栏文字,当不设置此属性时，默认加载当前页面的标题，并自动更新页面的标题
@@ -53,13 +52,115 @@ function initMsg(){
 							backgroundColor: "#007aff", // 控件背景颜色,颜色值格式为"#RRGGBB",默认值为"#F7F7F7"
 							autoBackButton: true
 						}
+					},
+					extras: {
+						sid: user,
+						selfId: selfUser + "@" + domain,
+						name: name
 					}
 				});
+
+				var msgsSuccess = function(e) {
+					var chatWs = plus.webview.getWebviewById(user);
+					for (var i = 0; i < e.length; i++) {
+						record = {
+							sender: e[i].fromJid,
+							type: 'text',
+							content: e[i].body
+						}
+						VG.method(chatWs, "addMsg", record, function(back) {})
+					}
+				}
+				findMsg(user, msgsSuccess);
+				var rFunc=function(){
+					self.initSession();
+				}
+				readAllMsg(user,rFunc);
+				
+			},
+			initSession: function() {
+				var self = this
+				this.msgs=[]
+				getContacts({}, function(back) {
+					console.log(JSON.stringify(back))
+					var usersMap = new Map()
+					for (var i = 0; i < back.length; i++) {
+						var name=back[i].name || back[i].jid
+						console.log(name);
+						usersMap.set(back[i].jid, name)
+					}
+					var unreadMap=new Map();
+					var sum=0
+					var sFunc=function(e){
+						e.forEach(function(v,i){
+							unreadMap.set(v.sid,v.count);
+							sum+=v.count;
+						})
+						util.addMsgCount(sum)
+						var s = function(ss) {
+							ss.forEach(function(s, i) {
+								console.log(s.sid)
+								var name = usersMap.get(s.sid)
+								var item = {
+									user: s.sid,
+									name: name,
+									time: s.time,
+									count: unreadMap.get(s.sid),
+									first: s.body
+								}
+								self.msgs.push(item)
+							});
+						}
+						findSession(s)
+					}
+					findUnreadCount(sFunc)
+				})
+			},
+			initConnect: function(){
+				var self =this
+				var onConneted = function() {
+					initNav();
+					self.initSession();
+				}
+				var onMsg = function(msg) {
+					console.log(msg.body)
+					var jid =msg.from.split("/")[0]
+					var read=0
+					var chatWs = plus.webview.getWebviewById(jid);
+					if (chatWs) {
+						read=1
+						record = {
+							sender: jid,
+							type: 'text',
+							content: msg.body
+						}
+						VG.method(chatWs, "addMsg", record, function(back) {})
+					}
+					if (msg.body == "") {
+						return
+					}
+					var t = new Date();
+				
+					msgdb = {
+						sid: jid,
+						fromJid: jid,
+						toJid: '',
+						body: msg.body,
+						type: 1,
+						read: read,
+						time: t.format("yyyy-MM-dd hh:mm:ss")
+					}
+					insertMsg(msgdb);
+					self.initSession();
+
+				}
+				connect(onConneted, onMsg)
 			}
 		}
 	});
-	util.addMsgCount(10)
 }
+
+var activePage
 
 function initNav() {
 	indexPage = plus.webview.currentWebview()
@@ -68,8 +169,8 @@ function initNav() {
 	var aniShow = {};
 	util.initSubpage(aniShow);
 
+    activePage = plus.webview.currentWebview();
 	var nview = plus.nativeObj.View.getViewById('tabBar'),
-		activePage = plus.webview.currentWebview(),
 		targetPage,
 		subpages = util.options.subpages,
 		pageW = window.innerWidth,
@@ -107,3 +208,19 @@ function initNav() {
 		util.setTitle(indexPage, currIndex)
 	});
 }
+
+function changeNavIndex(){
+	var aniShow = {};
+	var targetPage = plus.webview.currentWebview();
+	util.toggleNview(0);
+	if (targetPage==activePage){
+		return
+	}
+	// 子页面切换
+	util.changeSubpage(targetPage, activePage, aniShow,true);
+	activePage = targetPage;
+	util.setTitle(targetPage, 0)
+	//a.chat("zxy@im.xpressiot.com","詹晓云")
+}
+
+//function()

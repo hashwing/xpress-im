@@ -1,4 +1,5 @@
 mui.plusReady(function() {
+	//
 	new Vue({
 		el: "#user",
 		data() {
