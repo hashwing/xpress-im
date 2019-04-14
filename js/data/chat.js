@@ -67,6 +67,8 @@ IM.Client.prototype._onConnect = function(status) {
 		case Status.DISCONNECTING:
 			break;
 		case Status.DISCONNECTED:
+			console.log("lost connection, try reconnect")
+		    this.connect()
 			break;
 		case Status.ATTACHED:
 			break;
@@ -131,6 +133,7 @@ function connect(onConnected,onMessage) {
 function sendMsg(param,callback) {
 	var t=new Date();
 	msgdb={
+		id: guid(),
 		sid: param.toJid,
 		fromJid:'self',
 		toJid:param.toJid,

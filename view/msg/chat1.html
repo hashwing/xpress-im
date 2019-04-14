@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+		<meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+		<title>聊天窗口</title>
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css">
+		<link rel="stylesheet" type="text/css" href="../../css/mui.imageviewer.css">
+		<link rel="stylesheet" type="text/css" href="../../css/chat-im.css">
+	</head>
+
+	<body>
+		<div class="mui-content">
+			<div class="mui-scroll-wrapper">
+				<div class="mui-scroll" id="pullrefresh">
+					<!-- 聊天内容列表 -->
+					<div class="im-chat-main">
+						<ul id="msg_list">
+						</ul>
+						<div id="msg_end" style="height:0px;"></div>
+					</div>
+
+				</div>
+			</div>
+			<!-- 底部 -->
+			<footer>
+				<div class="footer-left">
+					<i class="mui-icon chat-icon chat-icon-voice"></i>
+				</div>
+				<div class="footer-center">
+					<textarea id="msg_text" type="text" class="input-text"></textarea>
+					<div class="mui-btn mui-btn-outlined voice-btn">按住 说话</div>
+				</div>
+				<div class="footer-right">
+					<i class="mui-icon chat-icon chat-icon-face" style="margin-right: 0.2rem; padding-left: 10px;"></i>
+					<i class="mui-icon chat-icon chat-icon-add-more" style="width: 46px;"></i>
+					<div class="mui-btn mui-btn-success mui-hidden" id="sendMessage">发送</div>
+				</div>
+			</footer>
+
+			<!--表情内容-->
+			<div id="face-content" class="mui-content face-content">
+				<div id="Gallery" class="mui-slider">
+					<div class="mui-slider-group" id="faces">
+						<div class="mui-slider-item">
+							<ul class="clear face-list">
+
+							</ul>
+						</div>
+					</div>
+					<div class="mui-slider-indicator">
+						<div class="mui-indicator mui-active"></div>
+						<div class="mui-indicator"></div>
+						<div class="mui-indicator"></div>
+						<div class="mui-indicator"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 更多弹出内容 -->
+			<div class="mui-content more-content">
+				<ul class="mui-table-view mui-grid-view mui-grid-9">
+					<li class="mui-table-view-cell mui-media mui-col-xs-3 mui-col-sm-3" data-type="images" id="getImg">
+						<span class="mui-icon mui-icon-image"></span>
+						<div class="mui-media-body">图片</div>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-3 mui-col-sm-3">
+						<span class="mui-icon mui-icon-eye"></span>
+						<div class="mui-media-body">小视频</div>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-3 mui-col-sm-3">
+						<span class="mui-icon mui-icon-location"></span>
+						<div class="mui-media-body">位置</div>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-3 mui-col-sm-3">
+						<span class="mui-icon mui-icon-contact"></span>
+						<div class="mui-media-body">名片</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<!--</div>-->
+	</body>
+	<script src="../../js/jquery-2.2.4.min.js"></script>
+	<script src="../../js/mui.min.js"></script>
+	<script src="../../js/mui.imageViewer.js"></script>
+	<script src="../../js/data/vg.js"></script>
+	<script src="../../js/data/db.js"></script>
+	<script type="text/javascript">
+		var emjs = [
+			"😂", "😃", "😄", "👿", "😉", "😊", "☺", "😌", "😍", "😏", "😓", "😒", "😔", "😖", "😘", "😚", "😜", "😝", "😞",
+			"😠", "😡", "😢", "😣", "😥", "😨", "😪", "😭",
+			"😰", "😱", "😲", "😳", "😷", "🙃", "😋", "😗", "😛", "🤑", "🤓", "😎", "🤗", "🙄", "🤔", "😩", "😤", "🤐", "🤒",
+			"😴", "👯", "👶", "👦", "👧", "👨", "👩", "👫",
+			"👱", "👲", "👳", "👴", "👵", "👮", "👷", "👸", "💂", "👼", "🎅", "👻", "💩", "💀", "👽", "👾", "💁", "🙅", "🙆",
+			"💆", "💇", "🙋", "🙇", "💑", "💏", "🙌", "👏", "👂", "👀",
+			"👃", "👄", "💋", "💅", "👋", "👍", "👎", "👆", "👇", "👈", "👉", "👌", "✌", "👊", "✊", "💪", "👐", "🙏"
+		];
+		var msgList = document.getElementById("msg_list");
+		var boxMsgText = document.getElementById("msg_text");
+
+		// 		mui('.mui-scroll-wrapper').scroll({
+		// 			deceleration: 0.0005 //flick 减速系数，系数越大，滚动速度越慢，滚动距离越小，默认值0.0006
+		// 		});
+		var firstLoad = true
+
+		function pullupRefresh() {
+			var ws = plus.webview.currentWebview();
+			var sid = ws.sid;
+			var msgsSuccess = function(e) {
+				if (e.length==0){
+					mui.toast("没有更多了~")
+				}
+				for (var i = 0; i < e.length; i++) {
+					msg = {
+						sender: e[i].fromJid,
+						type: 'text',
+						content: e[i].body,
+						time: e[i].time
+					}
+					msgs.unshift(msg);
+
+					bindMsgs(firstLoad);
+				}
+				firstLoad = false
+				mui('#pullrefresh').pullRefresh().endPulldownToRefresh()
+			}
+			findMsg(sid, msgs.length, msgsSuccess);
+		}
+
+		mui.init({
+			pullRefresh: {
+				container: "#pullrefresh", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+				down: {
+					style: 'circle',
+					//auto: true,
+					callback: pullupRefresh
+				}
+			}
+		});
+		(function($) {
+			//初始化图片浏览插件
+			var imageViewer = new $.ImageViewer('.msg-content-image', {
+				dbl: false
+			});
+			//			var slider = document.getElementById('Gallery');
+		})(mui);
+
+		$(function() {
+			//
+			var html = '';
+			var len = parseInt(emjs.length / 4)
+			console.log(len)
+			for (var j = 0; j < 4; j++) {
+				var itemhtml = '';
+				for (var i = j * len; i < (j + 1) * len; i++) {
+					itemhtml += '<li title="' + emjs[i] + '">' + emjs[i] + '</li>';
+				}
+				html += '<div class="mui-slider-item">' +
+					'<ul class="clear face-list">' +
+					itemhtml +
+					'</ul>' +
+					'</div>'
+			}
+			$("#faces").html(html)
+			//输入框事件绑定
+			$("#msg_text").on({
+				"keydown": function(e) {
+					var that = this;
+					if (e.ctrlKey && e.keyCode == 13) {
+						sendMsg(that.val(), 0);
+					}
+				},
+				"input propertychange": function(e) {
+					showSendBtn();
+				},
+				"focus": function() {
+					if ($(".more-content").css('display') != 'none') {
+						$(".more-content").hide();
+						$("footer").css("bottom", "0");
+						$(".im-chat-main").css("padding-bottom", "50px");
+						msg_end.scrollIntoView();
+						document.getElementById("msg_list").scrollTop = msgList.scrollHeight + msgList.offsetHeight;
+					}
+				}
+			});
+
+			//语音按钮事件
+			$(".footer-left i.chat-icon-voice").on("tap", function(e) {
+				var than = $(this);
+
+				$(".face-content").hide();
+				$(".more-content").hide();
+				$("footer").css("bottom", "0");
+				$(".im-chat-main").css("padding-bottom", "50px");
+				$(".footer-right i:first").attr("class", "mui-icon chat-icon chat-icon-face");
+				if (than.hasClass("chat-icon-keyboard")) {
+					$("#msg_text").show();
+					$("footer").css("padding-right", "65px");
+					$(".footer-right").css("width", "100px");
+					$(".footer-right").css("right", "1px");
+					$(".footer-center").css("padding-right", "25px");
+					$(".footer-center").css("padding-left", "3px");
+					$(".footer-right i:first").show();
+					$(".footer-center .voice-btn").hide();
+					than.attr("class", "mui-icon chat-icon chat-icon-voice");
+					setTimeout(function() {
+						$("#msg_text").focus();
+					}, 10);
+				} else {
+					$("#msg_text").hide();
+					$("footer").css("padding-right", "55px");
+					$(".footer-right").css("width", "initial");
+					$(".footer-right").css("right", "5px");
+					$(".footer-center").css("padding-right", "0");
+					$(".footer-center").css("padding-left", "10px");
+					$(".footer-right i:first").hide();
+					$(".footer-center .voice-btn").show();
+					than.attr("class", "mui-icon chat-icon chat-icon-keyboard");
+				}
+
+				document.getElementById("msg_list").scrollTop = msgList.scrollHeight + msgList.offsetHeight;
+			});
+
+			//表情按钮事件
+			$(".footer-right i.chat-icon-face").on("tap", function(e) {
+				var than = $(this);
+				var footer = $("footer");
+
+				//隐藏语音输入
+				if ($(".footer-left i:first").hasClass("chat-icon-keyboard")) {
+					$(".footer-center .voice-btn").hide();
+					$(".footer-left i:first").attr("class", "mui-icon chat-icon chat-icon-voice");
+					$("#msg_text").show();
+					$("footer").css("padding-right", "65px");
+					$(".footer-right").css("width", "100px");
+					$(".footer-right").css("right", "1px");
+					$(".footer-center").css("padding-right", "25px");
+					$(".footer-center").css("padding-left", "3px");
+					$(".footer-right i:first").show();
+				}
+
+				if (than.hasClass("chat-icon-keyboard")) {
+					$(".face-content").hide();
+					than.attr("class", "mui-icon chat-icon chat-icon-face");
+					footer.css("bottom", "0");
+					$(".im-chat-main").css("padding-bottom", "50px");
+					setTimeout(function() {
+						$("#msg_text").focus();
+					}, 10);
+				} else {
+					$(".more-content").hide();
+					$(".face-content").show();
+					than.attr("class", "mui-icon chat-icon chat-icon-keyboard");
+					footer.css("bottom", $(".face-content").height());
+					$(".im-chat-main").css("padding-bottom", $(".face-content").height() + 50);
+				}
+
+				document.getElementById("msg_list").scrollTop = msgList.scrollHeight + msgList.offsetHeight;
+			});
+
+			//绑定表情点击事件
+			$(".face-content").find('.face-list>li').on('tap', function() {
+				focusInsert(boxMsgText, this.title + ' ');
+				showSendBtn();
+			});
+
+			//更多按钮事件
+			$(".footer-right i.chat-icon-add-more").on("tap", function(e) {
+				var than = $(this);
+				var footer = $("footer");
+
+				//隐藏语音输入
+				if ($(".footer-left i:first").hasClass("chat-icon-keyboard")) {
+					$(".footer-center .voice-btn").hide();
+					$(".footer-left i:first").attr("class", "mui-icon chat-icon chat-icon-voice");
+					$("#msg_text").show();
+					$("footer").css("padding-right", "65px");
+					$(".footer-right").css("width", "100px");
+					$(".footer-right").css("right", "1px");
+					$(".footer-center").css("padding-right", "25px");
+					$(".footer-center").css("padding-left", "3px");
+					$(".footer-right i:first").show();
+				}
+
+				//为了美观把更多的高度设置成表情一样
+				$(".more-content").height($(".face-content").height());
+
+				//表情是展开的则隐藏
+				if (than.prev().hasClass("chat-icon-keyboard")) {
+					than.prev().attr("class", "mui-icon chat-icon chat-icon-face");
+				}
+
+				if ($(".more-content").css('display') != 'none') {
+					$(".more-content").hide();
+					footer.css("bottom", "0");
+					$(".im-chat-main").css("padding-bottom", "50px");
+				} else {
+					$(".face-content").hide();
+					$(".more-content").show();
+					footer.css("bottom", $(".more-content").height());
+					$(".im-chat-main").css("padding-bottom", $(".more-content").height() + 50);
+				}
+
+				document.getElementById("msg_list").scrollTop = msgList.scrollHeight + msgList.offsetHeight;
+			});
+
+			//点击消息列表，关闭键盘
+			$("#msg_list").on('tap', function(event) {
+				if (!focus) {
+					boxMsgText.blur();
+				}
+				//表情是展开的则隐藏
+				if ($(".footer-right i:first").hasClass("chat-icon-keyboard")) {
+					$(".footer-right i:first").attr("class", "mui-icon chat-icon chat-icon-face");
+				}
+				$(".face-content").hide();
+				$(".more-content").hide();
+				$("footer").css("bottom", "0");
+				$(".im-chat-main").css("padding-bottom", "50px");
+
+				document.getElementById("msg_list").scrollTop = msgList.scrollHeight + msgList.offsetHeight;
+			});
+
+
+		});
+
+		//显示或隐藏发送按钮
+		function showSendBtn() {
+			//处理是否显示发送消息按钮
+			if ($("#msg_text").val()) {
+				$("#sendMessage").removeClass("mui-hidden");
+				$(".footer-right i.chat-icon-add-more").addClass("mui-hidden");
+			} else {
+				$("#sendMessage").addClass("mui-hidden");
+				$(".footer-right i.chat-icon-add-more").removeClass("mui-hidden");
+			}
+		}
+
+		//在焦点处插入内容
+		function focusInsert(obj, str) {
+			var result, val = obj.value;
+			obj.focus();
+			if (document.selection) { //ie
+				result = document.selection.createRange();
+				document.selection.empty();
+				result.text = str;
+			} else {
+				result = [
+					val.substring(0, obj.selectionStart),
+					str,
+					val.substr(obj.selectionEnd)
+				];
+				obj.focus();
+				obj.value = result.join('');
+			}
+		}
+
+		//转换内容
+		function imContent(content) {
+			//支持的html标签
+			var html = function(end) {
+				return new RegExp('\\n*\\[' + (end || '') +
+					'(pre|div|p|table|thead|th|tbody|tr|td|ul|li|ol|li|dl|dt|dd|h2|h3|h4|h5)([\\s\\S]*?)\\]\\n*', 'g');
+			};
+			content = (content || '').replace(/&(?!#?[a-zA-Z0-9]+;)/g, '&amp;')
+				.replace(/face\[([^\s\[\]]+?)\]/g, function(face) { //转义表情
+					var alt = face.replace(/^face/g, '');
+					return '<img alt="' + alt + '" title="' + alt + '" src="' + faces[alt] + '">';
+				}).replace(/a\([\s\S]+?\)\[[\s\S]*?\]/g, function(str) { //转义链接
+					var href = (str.match(/a\(([\s\S]+?)\)\[/) || [])[1];
+					var text = (str.match(/\)\[([\s\S]*?)\]/) || [])[1];
+					if (!href)
+						return str;
+					return '<a href="' + href + '" target="_blank">' + (text || href) + '</a>';
+				}).replace(html(), '\<$1 $2\>').replace(html('/'), '\</$1\>') //转移代码
+				.replace(/\n/g, '<br>') //转义换行 
+			return content;
+		}
+		/**
+		 * 获取当前时间
+		 */
+		function getNowFormatDate() {
+			var date = new Date();
+			var seperator1 = "-";
+			var seperator2 = ":";
+			var month = date.getMonth() + 1;
+			var strDate = date.getDate();
+			if (month >= 1 && month <= 9) {
+				month = "0" + month;
+			}
+			if (strDate >= 0 && strDate <= 9) {
+				strDate = "0" + strDate;
+			}
+			var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate +
+				" " + date.getHours() + seperator2 + date.getMinutes() +
+				seperator2 + date.getSeconds();
+			return currentdate;
+		}
+	</script>
+	<script>
+		var msgs = [];
+		var heads = {
+			"self": "../../img/zhan.jpg",
+			"sz": "../../img/head.png"
+		};
+		//
+		function addMsg(msg, callback) {
+			//console.log(msg.content)
+			if (msg.content && msg.content != "") {
+				msgs.push(msg);
+				if (bindMsgs) {
+					bindMsgs(true);
+				}
+			}
+		};
+		//
+		function bindMsgs(endMsg) {
+			var html = '';
+			var oldtimestamp=0
+			msgs.forEach(function(v, i) {
+				var head = heads["sz"]
+				if (v.sender == 'self') {
+					html += '<li class="im-chat-mine">'
+					head = heads["self"]
+				} else {
+					html += '<li>'
+				}
+				if (!v.time) {
+					v.time = ''
+				}
+				var date = v.time.substring(0, 19);
+				date = date.replace(/-/g, '/');
+				var timestamp = new Date(date).getTime();
+				if (oldtimestamp==0){
+					oldtimestamp=timestamp
+				}else{
+					if (timestamp-oldtimestamp<3600000){
+						v.time = ''
+					}
+				}
+				html += '<p class="send-time">' + v.time + '</p>' +
+					'<div class="im-chat-user">' +
+					'<img src="' + head + '" />' +
+					'<cite></cite>' +
+					'</div>' +
+					'<div class="im-chat-text">' + v.content + '</div>' +
+					'</li>';
+
+			});
+			msgList.innerHTML = html
+			if (endMsg) {
+				msg_end.scrollIntoView();
+			}
+		};
+
+
+		//发送图片
+		(function($, doc) {
+			$.plusReady(function() {
+				pullupRefresh()
+				//发送按钮事件
+				document.getElementById('sendMessage').addEventListener("tap", function() {
+					var content = jQuery("#msg_text").val();
+					console.log(content)
+					if (content == "") {
+						return
+					}
+					content = imContent(content)
+					var msg = {
+						sender: "self",
+						type: "text",
+						content: content,
+						time: ""
+					}
+					msgs.push(msg)
+					bindMsgs(true)
+
+					//清空
+					jQuery("#msg_text").val('')
+					showSendBtn();
+					var indexPage = plus.webview.getLaunchWebview();
+					var ws = plus.webview.currentWebview();
+					VG.method(indexPage, "sendMsg", {
+						fromJid: ws.selfUser,
+						toJid: ws.sid,
+						msg: content
+					}, function(back) {
+
+					});
+				});
+
+
+				document.getElementById('getImg').addEventListener('tap', function(event) {
+					var btnArray = [{
+						title: "拍照"
+					}, {
+						title: "从相册选择"
+					}];
+					plus.nativeUI.actionSheet({
+						title: "选择照片",
+						cancel: "取消",
+						buttons: btnArray
+					}, function(e) {
+						var index = e.index;
+						switch (index) {
+							case 0:
+								break;
+							case 1:
+								var cmr = plus.camera.getCamera();
+								cmr.captureImage(function(path) {
+									console.log('aaaa' + path);
+									/*send({
+										sender: 'self',
+										type: 'image',
+										content: "file://" + plus.io.convertLocalFileSystemURL(path)
+									});*/
+									var ImgPath = "file://" + plus.io.convertLocalFileSystemURL(path);
+									var html = '<li class="im-chat-mine">' +
+										'<p class="send-time">' + getNowFormatDate() + '</p>' +
+										'<div class="im-chat-user">' +
+										'<img src="images/ke.jpg" />' +
+										'<cite>科比</cite>' +
+										'</div>' +
+										'<div class="im-chat-text">' + '<img class="msg-content-image" src=' + ImgPath + ' />' + '</div>' +
+										'</li>';
+
+									//追加内容
+									msgList.insertAdjacentHTML('beforeEnd', html);
+
+								}, function(err) {});
+								break;
+							case 2:
+								plus.gallery.pick(function(path) {
+									console.log('bbbb' + path);
+									/*send({
+										sender: 'self',
+										type: 'image',
+										content: path
+									});*/
+									var html = '<li class="im-chat-mine">' +
+										'<p class="send-time">' + getNowFormatDate() + '</p>' +
+										'<div class="im-chat-user">' +
+										'<img src="images/ke.jpg" />' +
+										'<cite>科比</cite>' +
+										'</div>' +
+										'<div class="im-chat-text">' + '<img class="msg-content-image" src=' + path + ' />' + '</div>' +
+										'</li>';
+
+									//追加内容
+									msgList.insertAdjacentHTML('beforeEnd', html);
+								}, function(err) {}, null);
+								break;
+						}
+					});
+				}, false);
+			});
+		}(mui, document));
+	</script>
+
+</html>

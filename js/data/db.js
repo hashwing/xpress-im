@@ -1,23 +1,28 @@
 var dbReady=false
 var cacheMsg=[]
 
-function storeMsg(msg){
-	if (dbReady){
-		insertMsg(msg)
-	}else{
-		cacheMsg.push(msg)
-	}
-}
+// function storeMsg(msg){
+// 	if (dbReady){
+// 		insertMsg(msg)
+// 	}else{
+// 		cacheMsg.push(msg)
+// 	}
+// }
+var dbProfix=""
 
 mui.plusReady(function() {
+	dbProfix=plus.storage.getItem("user")+"_"
+})
+
+function opendb(){
 	plus.sqlite.openDatabase({
 		name: 'msg',
 		path: '_doc/msg.db',
 		success: function(e) {
 			plus.sqlite.executeSql({
 				name: 'msg',
-				//sql: 'drop table msg',
-				sql: 'create table if not exists msg("sid" CHAR(50),"fromJid" CHAR(50),"toJid" CHAR(50),"body" CHAR(4096),"msg_typ" INT(2),"read" INT(1),"time" CHAR(20))',
+				//sql: 'drop table djh_msg',
+				sql: 'create table if not exists '+dbProfix+'msg("id" CHAR(50),"sid" CHAR(50),"fromJid" CHAR(50),"toJid" CHAR(50),"body" CHAR(4096),"msg_typ" INT(2),"read" INT(1),"time" CHAR(20))',
 				success: function(e) {
 					dbReady=true
 					for (var i=0;i<cacheMsg.length;i++){
@@ -35,12 +40,12 @@ mui.plusReady(function() {
 			console.log(JSON.stringify(e));
 		}
 	});
-})
+}
 
 function insertMsg(msg){
 	plus.sqlite.executeSql({
 			name: 'msg',
-			sql: "insert into msg values('"+msg.sid+"','"+msg.fromJid+"','"+msg.toJid+"','"+msg.body+"',"+msg.type+","+msg.read+",'"+msg.time+"')",
+			sql: "insert into "+dbProfix+"msg values('"+msg.id+"','"+msg.sid+"','"+msg.fromJid+"','"+msg.toJid+"','"+msg.body+"',"+msg.type+","+msg.read+",'"+msg.time+"')",
 			success: function(e){
 				console.log(JSON.stringify(e))
 			},
@@ -50,13 +55,15 @@ function insertMsg(msg){
 		})
 }
 
-function findMsg(sid,success){
+function findMsg(sid,offset,success){
 	plus.sqlite.selectSql({
 		name: 'msg',
-		sql: "select * from msg where sid='"+sid+"'",
+		sql: "select * from "+dbProfix+"msg where sid='"+sid+"' order by time desc limit 15 OFFSET "+offset,
 		success: function(e){
 			console.log(JSON.stringify(e));
-			success(e)
+			if (success){
+				success(e)
+			}
 		},
 		fail: function(e){
 			console.log(JSON.stringify(e));
@@ -67,11 +74,11 @@ function findMsg(sid,success){
 function readAllMsg(sid,success){
 	plus.sqlite.executeSql({
 			name: 'msg',
-			sql: "update msg set read=1 where read=0 and sid='"+sid+"'",
+			sql: "update "+dbProfix+"msg set read=1 where read=0 and sid='"+sid+"'",
 			success: function(e){
 				console.log(JSON.stringify(e))
 				if (success){
-					success()
+					success(e)
 				}
 			},
 			fail: function(e){
@@ -83,10 +90,12 @@ function readAllMsg(sid,success){
 function findUnreadCount(success){
 	plus.sqlite.selectSql({
 		name: 'msg',
-		sql: "select sid, count(*) as count from msg where read=0 GROUP BY sid",
+		sql: "select sid, count(*) as count from "+dbProfix+"msg where read=0 GROUP BY sid",
 		success: function(e){
 			console.log(JSON.stringify(e));
-			success(e)
+			if (success){
+				success(e)
+			}
 		},
 		fail: function(e){
 			console.log(JSON.stringify(e));
@@ -95,10 +104,14 @@ function findUnreadCount(success){
 }
 
 
-function findSession(success){
+function findSession(success,sid){
+	var sql="select * from "+dbProfix+"msg GROUP BY sid order by time asc";
+	if (sid){
+		sql="select * from "+dbProfix+"msg where sid='"+sid+"' GROUP BY sid order by time asc"
+	}
 	plus.sqlite.selectSql({
 		name: 'msg',
-		sql: "select * from msg GROUP BY sid",
+		sql: sql,
 		success: function(e){
 			console.log(JSON.stringify(e));
 			success(e)
@@ -126,4 +139,11 @@ Date.prototype.format = function(fmt)
     if(new RegExp("("+ k +")").test(fmt))   
   fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
   return fmt;   
-}  
+}
+
+function guid() {
+    function S4() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    }
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}

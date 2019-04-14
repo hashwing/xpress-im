@@ -4,7 +4,7 @@ var util = {
 		ACTIVE_COLOR: "#007aff",
 		NORMAL_COLOR: "#000",
 		subpages: ["../contact/contact.html", "../me/me.html"],
-		titles: ["消息", "联系人", "我"]
+		titles: ["消息", "联系人", "我"],
 	},
 	/**
 	 *  简单封装了绘制原生view控件的方法
@@ -37,6 +37,9 @@ var util = {
 			}
 
 		}
+		var view = new plus.nativeObj.View("msgCount", {bottom:'25px',left:'17%',height:'25px',width:'15%',position:'absolute'});
+		self.append(view)
+		//view.hide()
 
 		// 初始化第一个tab项为首次显示
 		temp[self.id] = "true";
@@ -155,6 +158,7 @@ var util = {
 		console.log("*****")
 	},
 	addMsgCount: function(num) {
+		nviewEvent = plus.nativeObj.View.getViewById("msgCount")
 		var Rheight = '18px';
 		var Rwith = '20px';
 		if (num == 0 || num == null) {
@@ -168,8 +172,8 @@ var util = {
 			Rwith = '28px';
 			num = '99+';
 		}
-		nviewEvent = plus.nativeObj.View.getViewById("tabBar"), // 获取nview控件对象
-		//nviewEvent.reset()
+		nviewEvent.show()
+		nviewEvent.reset()
 			// 绘制空心圆角矩形,borderColor设置为导航背景色，就变成圆形
 			nviewEvent.drawRect({
 				color: '#f74c31',
@@ -178,14 +182,14 @@ var util = {
 				borderColor: "#FFFFFF"
 			}, {
 				top: '2px',
-				left: '17%',
+				left: '0',
 				width: Rwith,
 				height: Rheight
 			});
 		//绘制数字
 		nviewEvent.drawText(num, {
 			top: '3px',
-			left: '17%',
+			left: '0',
 			width: Rwith,
 			height: Rheight
 		}, {

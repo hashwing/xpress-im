@@ -42,9 +42,10 @@
 				</div>
 			<% } %>
 		</script>
-		<div class="mui-content">
+		<div class="mui-content" id="pullrefresh">
 			<div id='msg-list'>
 			</div>
+			<div id="msg_end" style="height:0px;"></div>
 		</div>
 		<footer>
 			<div class="footer-left">
@@ -67,22 +68,53 @@
 		<script src="../../js/mui.imageViewer.js"></script>
 		<script src="../../js/arttmpl.js"></script>
 		<script src="../../js/data/vg.js"></script>
+		<script src="../../js/data/db.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			var bindMsgList
-			var record = [{
-				sender: 'self',
-				type: 'text',
-				content: '我是历史消息'
-			}];
-			function addMsg(msg,callback){
-				 console.log(msg.content)
-				 if (msg.content&&msg.content!=""){
-					 record.push(msg);
-					 if (bindMsgList){
-						 bindMsgList();
-					 }
-				 }
+			var record = [];
+			var pageInit=false;
+
+			function addMsg(msg, callback) {
+				//console.log(msg.content)
+				if (msg.content && msg.content != "") {
+					record.push(msg);
+					if (bindMsgList) {
+						bindMsgList();
+					}
+				}
 			};
+
+			function pullupRefresh() {
+				var ws = plus.webview.currentWebview();
+				var sid=ws.sid;
+				var msgsSuccess = function(e) {
+					for (var i = 0; i < e.length; i++) {
+						msg = {
+							sender: e[i].fromJid,
+							type: 'text',
+							content: e[i].body
+						}
+						record.unshift(msg);
+						
+						bindMsgList(pageInit);
+					}
+					pageInit=true
+					mui('#pullrefresh').pullRefresh().endPulldownToRefresh()
+				}
+				findMsg(sid,record.length, msgsSuccess);
+			}
+			
+			mui.init({
+				pullRefresh: {
+					container: "#pullrefresh", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style:'circle',
+						//auto: true,
+						callback: pullupRefresh
+					}
+				}
+			})
+			
 			(function($, doc) {
 				var MIN_SOUND_TIME = 800;
 				$.init({
@@ -94,15 +126,15 @@
 						drag: true, //默认为true
 						hold: true, //默认为false，不监听
 						release: true //默认为false，不监听
-					}
+					},
 				});
 				template.config('escape', false);
-				
-				if(mui.os.ios){
+
+				if (mui.os.ios) {
 					// 解决在ios上fixed元素focusin时位置出现错误的问题 
-					document.addEventListener('DOMContentLoaded',function(){
+					document.addEventListener('DOMContentLoaded', function() {
 						var footerDom = document.querySelector('footer');
-						
+
 						document.addEventListener('focusin', function() {
 							footerDom.style.position = 'absolute';
 						});
@@ -113,9 +145,12 @@
 				}
 
 				$.plusReady(function() {
-					var ws=plus.webview.currentWebview();
-					console.log(ws.sid)
-					plus.webview.currentWebview().setStyle({
+					pullupRefresh()
+					var ws = plus.webview.currentWebview();
+					var selfUser = ws.selfId.split("@")[0]
+					//findUnreadCount()
+					//console.log(selfUser)
+					ws.setStyle({
 						softinputMode: "adjustResize"
 					});
 					var showKeyboard = function() {
@@ -169,7 +204,7 @@
 					var imageViewer = new $.ImageViewer('.msg-content-image', {
 						dbl: false
 					});
-					bindMsgList = function() {
+					bindMsgList = function(disscroll) {
 						//绑定数据:
 						/*tp.bind({
 							template: 'msg-template',
@@ -186,11 +221,14 @@
 							}, false);
 						});
 						imageViewer.findAllImage();
-						ui.areaMsgList.scrollTop = ui.areaMsgList.scrollHeight + ui.areaMsgList.offsetHeight;
+						if (!disscroll){
+							msg_end.scrollIntoView();
+						}
+						//ui.areaMsgList.scrollTop = ui.areaMsgList.scrollHeight + ui.areaMsgList.offsetHeight;
 					};
 					bindMsgList();
 					window.addEventListener('resize', function() {
-						ui.areaMsgList.scrollTop = ui.areaMsgList.scrollHeight + ui.areaMsgList.offsetHeight;
+						//ui.areaMsgList.scrollTop = ui.areaMsgList.scrollHeight + ui.areaMsgList.offsetHeight;
 					}, false);
 					var send = function(msg) {
 						record.push(msg);
@@ -199,34 +237,36 @@
 					};
 					var toRobot = function(info) {
 						var indexPage = plus.webview.getLaunchWebview();
-						VG.method(indexPage, "sendMsg", {fromJid:ws.selfUser,toJid:ws.sid,msg:info }, function(back) {
-							
-						})
+						VG.method(indexPage, "sendMsg", {
+							fromJid: ws.selfUser,
+							toJid: ws.sid,
+							msg: info
+						}, function(back) {
 
-						console.log("aa")
-// 						var apiUrl = 'http://www.tuling123.com/openapi/api';
-// 						$.getJSON(apiUrl, {
-// 							"key": 'acfbca724ea1b5db96d2eef88ce677dc',
-// 							"info": info,
-// 							"userid": plus.device.uuid
-// 						}, function(data) {
-// 							//alert(JSON.stringify(data));
-// 							record.push({
-// 								sender: 'zs',
-// 								type: 'text',
-// 								content: data.text
-// 							});
-// 							bindMsgList();
-// 						});
+						});
+						// 						var apiUrl = 'http://www.tuling123.com/openapi/api';
+						// 						$.getJSON(apiUrl, {
+						// 							"key": 'acfbca724ea1b5db96d2eef88ce677dc',
+						// 							"info": info,
+						// 							"userid": plus.device.uuid
+						// 						}, function(data) {
+						// 							//alert(JSON.stringify(data));
+						// 							record.push({
+						// 								sender: 'zs',
+						// 								type: 'text',
+						// 								content: data.text
+						// 							});
+						// 							bindMsgList();
+						// 						});
 					};
 
 					function msgTextFocus() {
+						ui.boxMsgText.focus();
+						setTimeout(function() {
 							ui.boxMsgText.focus();
-							setTimeout(function() {
-								ui.boxMsgText.focus();
-							}, 150);
-						}
-						//解决长按“发送”按钮，导致键盘关闭的问题；
+						}, 150);
+					}
+					//解决长按“发送”按钮，导致键盘关闭的问题；
 					ui.footerRight.addEventListener('touchstart', function(event) {
 						if (ui.btnMsgType.classList.contains('mui-icon-paperplane')) {
 							msgTextFocus();
@@ -323,17 +363,17 @@
 									break;
 							}
 						});
-					}, false); 
-					var setSoundAlertVisable=function(show){
-						if(show){
+					}, false);
+					var setSoundAlertVisable = function(show) {
+						if (show) {
 							ui.boxSoundAlert.style.display = 'block';
 							ui.boxSoundAlert.style.opacity = 1;
-						}else{
+						} else {
 							ui.boxSoundAlert.style.opacity = 0;
 							//fadeOut 完成再真正隐藏
-							setTimeout(function(){
+							setTimeout(function() {
 								ui.boxSoundAlert.style.display = 'none';
-							},200);
+							}, 200);
 						}
 					};
 					var recordCancel = false;
@@ -344,7 +384,7 @@
 					var stopTimer = null;
 					ui.boxMsgSound.addEventListener('hold', function(event) {
 						recordCancel = false;
-						if(stopTimer)clearTimeout(stopTimer);
+						if (stopTimer) clearTimeout(stopTimer);
 						audio_tips.innerHTML = "手指上划，取消发送";
 						ui.boxSoundAlert.classList.remove('rprogress-sigh');
 						setSoundAlertVisable(true);
@@ -399,10 +439,10 @@
 							audio_tips.innerHTML = "录音时间太短";
 							ui.boxSoundAlert.classList.add('rprogress-sigh');
 							recordCancel = true;
-							stopTimer=setTimeout(function(){
+							stopTimer = setTimeout(function() {
 								setSoundAlertVisable(false);
-							},800);
-						}else{
+							}, 800);
+						} else {
 							setSoundAlertVisable(false);
 						}
 						recorder.stop();
@@ -425,18 +465,18 @@
 							ui.boxMsgText.focus();
 						}, 0);
 						focus = true;
-						setTimeout(function () {
+						setTimeout(function() {
 							focus = false;
-						},1000);
+						}, 1000);
 						event.detail.gesture.preventDefault();
 					}, false);
 					//点击消息列表，关闭键盘
-					ui.areaMsgList.addEventListener('click',function (event) {
-						if(!focus){
+					ui.areaMsgList.addEventListener('click', function(event) {
+						if (!focus) {
 							ui.boxMsgText.blur();
 						}
 					})
-					
+
 				});
 			}(mui, document));
 		</script>

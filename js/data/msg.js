@@ -1,6 +1,5 @@
 function loginSuccess() {
-	initNav()
-	initMsg()
+	initMsg();
 }
 mui.init({
 	keyEventBind: {
@@ -32,9 +31,11 @@ function initMsg() {
 				msgs: [],
 				unread: new Map(),
 				password: "",
+				isready: false
 			}
 		},
 		mounted() {
+			this.initdb()
 			this.initConnect()
 		},
 		methods: {
@@ -42,8 +43,8 @@ function initMsg() {
 				var selfUser = plus.storage.getItem("user")
 				var self=this
 				mui.openWindow({
-					url: 'chat.html',
-					id: user,
+					url: 'chat1.html',
+					id: user.split("@")[0],
 					styles: { // 窗口参数 参考5+规范中的WebviewStyle,也就是说WebviewStyle下的参数都可以在此设置
 						titleNView: { // 窗口的标题栏控件
 							titleText: name, // 标题栏文字,当不设置此属性时，默认加载当前页面的标题，并自动更新页面的标题
@@ -57,30 +58,36 @@ function initMsg() {
 						sid: user,
 						selfId: selfUser + "@" + domain,
 						name: name
+					},
+					waiting:{
+						autoShow:false
+					},
+					show: {
+						duration:300
 					}
 				});
 
-				var msgsSuccess = function(e) {
-					var chatWs = plus.webview.getWebviewById(user);
-					for (var i = 0; i < e.length; i++) {
-						record = {
-							sender: e[i].fromJid,
-							type: 'text',
-							content: e[i].body
-						}
-						VG.method(chatWs, "addMsg", record, function(back) {})
-					}
-				}
-				findMsg(user, msgsSuccess);
+// 				var msgsSuccess = function(e) {
+// 					var chatWs = plus.webview.getWebviewById(user.split("@")[0]);
+// 					for (var i = 0; i < e.length; i++) {
+// 						record = {
+// 							sender: e[i].fromJid,
+// 							type: 'text',
+// 							content: e[i].body+","+e[i].time
+// 						}
+// 						VG.method(chatWs, "addMsg", record, function(back) {})
+// 					}
+// 				}
+// 				findMsg(user, msgsSuccess);
 				var rFunc=function(){
-					self.initSession();
+					self.initSession(user);
 				}
 				readAllMsg(user,rFunc);
 				
 			},
-			initSession: function() {
+			initSession: function(sid) {
 				var self = this
-				this.msgs=[]
+				//this.msgs=[]
 				getContacts({}, function(back) {
 					console.log(JSON.stringify(back))
 					var usersMap = new Map()
@@ -92,12 +99,28 @@ function initMsg() {
 					var unreadMap=new Map();
 					var sum=0
 					var sFunc=function(e){
+						console.log(e)
 						e.forEach(function(v,i){
 							unreadMap.set(v.sid,v.count);
 							sum+=v.count;
-						})
+						});
+						var sidIndex=-1
+						self.msgs.forEach(function(v,i){
+							if (v.user==sid){
+								sidIndex=i
+							}
+						});
+						if (sidIndex>0){
+							self.msgs.splice(sidIndex,1)
+						}
 						util.addMsgCount(sum)
 						var s = function(ss) {
+							if (sidIndex==0&& sid){
+								self.msgs[0].count=unreadMap.get(ss[0].sid);
+								self.msgs[0].first=ss[0].body;
+								self.msgs[0].time=ss[0].time;
+								return
+							}
 							ss.forEach(function(s, i) {
 								console.log(s.sid)
 								var name = usersMap.get(s.sid)
@@ -108,10 +131,11 @@ function initMsg() {
 									count: unreadMap.get(s.sid),
 									first: s.body
 								}
-								self.msgs.push(item)
+								self.msgs.unshift(item)
 							});
+							self.isready=true
 						}
-						findSession(s)
+						findSession(s,sid)
 					}
 					findUnreadCount(sFunc)
 				})
@@ -123,10 +147,9 @@ function initMsg() {
 					self.initSession();
 				}
 				var onMsg = function(msg) {
-					console.log(msg.body)
 					var jid =msg.from.split("/")[0]
 					var read=0
-					var chatWs = plus.webview.getWebviewById(jid);
+					var chatWs = plus.webview.getWebviewById(jid.split("@")[0]);
 					if (chatWs) {
 						read=1
 						record = {
@@ -142,6 +165,7 @@ function initMsg() {
 					var t = new Date();
 				
 					msgdb = {
+						id: guid(),
 						sid: jid,
 						fromJid: jid,
 						toJid: '',
@@ -151,10 +175,17 @@ function initMsg() {
 						time: t.format("yyyy-MM-dd hh:mm:ss")
 					}
 					insertMsg(msgdb);
-					self.initSession();
+					if (self.isready){
+					self.initSession(jid);
+					}
 
 				}
 				connect(onConneted, onMsg)
+			}
+			,
+			initdb:function(){
+				console.log(guid())
+				opendb()
 			}
 		}
 	});
