@@ -131,7 +131,6 @@ function connect(onConnected,onMessage) {
 }
 
 function sendMsg(param,callback) {
-	var t=new Date();
 	msgdb={
 		id: guid(),
 		sid: param.toJid,
@@ -140,7 +139,7 @@ function sendMsg(param,callback) {
 		body: param.msg,
 		type: 1,
 		read: 1,
-		time: t.format("yyyy-MM-dd hh:mm:ss")
+		time: nowTimestamp()
 	}
 	insertMsg(msgdb)
 	var reply = $msg({

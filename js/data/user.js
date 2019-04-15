@@ -27,10 +27,7 @@ mui.plusReady(function() {
 				var user = plus.storage.getItem("user")
 				var pwd = plus.storage.getItem("pwd")
 				if (user == "" || user == null || pwd == "" || pwd == null) {
-					mui.openWindow({
-						url: "../login/login.html",
-						id: "login",
-					})
+					plus.runtime.quit();
 				}
 			}
 		}

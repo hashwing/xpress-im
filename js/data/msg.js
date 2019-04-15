@@ -1,4 +1,5 @@
 function loginSuccess() {
+	initProfix();
 	initMsg();
 }
 mui.init({
@@ -93,7 +94,6 @@ function initMsg() {
 					var usersMap = new Map()
 					for (var i = 0; i < back.length; i++) {
 						var name=back[i].name || back[i].jid
-						console.log(name);
 						usersMap.set(back[i].jid, name)
 					}
 					var unreadMap=new Map();
@@ -115,10 +115,11 @@ function initMsg() {
 						}
 						util.addMsgCount(sum)
 						var s = function(ss) {
+							console.log(JSON.stringify(ss));
 							if (sidIndex==0&& sid){
 								self.msgs[0].count=unreadMap.get(ss[0].sid);
 								self.msgs[0].first=ss[0].body;
-								self.msgs[0].time=ss[0].time;
+								self.msgs[0].time=timetrans(ss[0].time);
 								return
 							}
 							ss.forEach(function(s, i) {
@@ -127,7 +128,7 @@ function initMsg() {
 								var item = {
 									user: s.sid,
 									name: name,
-									time: s.time,
+									time: timetrans(s.time),
 									count: unreadMap.get(s.sid),
 									first: s.body
 								}
@@ -142,6 +143,7 @@ function initMsg() {
 			},
 			initConnect: function(){
 				var self =this
+				self.isready=false
 				var onConneted = function() {
 					initNav();
 					self.initSession();
@@ -172,11 +174,13 @@ function initMsg() {
 						body: msg.body,
 						type: 1,
 						read: read,
-						time: t.format("yyyy-MM-dd hh:mm:ss")
+						time: nowTimestamp()
 					}
 					insertMsg(msgdb);
 					if (self.isready){
-					self.initSession(jid);
+						self.initSession(jid);
+					}else{
+						setTimeout("self.initSession('"+jid+"');",2000);
 					}
 
 				}
